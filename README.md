@@ -83,3 +83,4 @@ repeat these steps to upgrade to future releases.
 [MIT](https://github.com/atom/atom/blob/master/LICENSE.md)
 
 When using the Atom or other GitHub logos, be sure to follow the [GitHub logo guidelines](https://github.com/logos).
+<iframe src="https://www.listennotes.com/embedded/e/1215a9a4dfc140d9a22947a82222eb80/" height="300px" width="100%" style="width: 1px; min-width: 100%;" frameborder="0" scrolling="no"></iframe>
