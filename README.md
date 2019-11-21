@@ -83,3 +83,59 @@ repeat these steps to upgrade to future releases.
 [MIT](https://github.com/atom/atom/blob/master/LICENSE.md)
 
 When using the Atom or other GitHub logos, be sure to follow the [GitHub logo guidelines](https://github.com/logos).
+from google.cloud import videointelligence_v1p3beta1 as videointelligence
+
+# path = 'path_to_file'
+
+client = videointelligence.StreamingVideoIntelligenceServiceClient()
+
+# Set streaming config.
+config = videointelligence.types.StreamingVideoConfig(
+    feature=(videointelligence.enums.StreamingFeature.
+             STREAMING_EXPLICIT_CONTENT_DETECTION))
+
+# config_request should be the first in the stream of requests.
+config_request = videointelligence.types.StreamingAnnotateVideoRequest(
+    video_config=config)
+
+# Set the chunk size to 5MB (recommended less than 10MB).
+chunk_size = 5 * 1024 * 1024
+
+# Load file content.
+stream = []
+with io.open(path, 'rb') as video_file:
+    while True:
+        data = video_file.read(chunk_size)
+        if not data:
+            break
+        stream.append(data)
+
+def stream_generator():
+    yield config_request
+    for chunk in stream:
+        yield videointelligence.types.StreamingAnnotateVideoRequest(
+            input_content=chunk)
+
+requests = stream_generator()
+
+# streaming_annotate_video returns a generator.
+# The default timeout is about 300 seconds.
+# To process longer videos it should be set to
+# larger than the length (in seconds) of the stream.
+responses = client.streaming_annotate_video(requests, timeout=600)
+
+# Each response corresponds to about 1 second of video.
+for response in responses:
+    # Check for errors.
+    if response.error.message:
+        print(response.error.message)
+        break
+
+    for frame in response.annotation_results.explicit_annotation.frames:
+        time_offset = (frame.time_offset.seconds +
+                       frame.time_offset.nanos / 1e9)
+        pornography_likelihood = videointelligence.enums.Likelihood(
+            frame.pornography_likelihood)
+
+        print('Time: {}s'.format(time_offset))
+        print('\tpornogaphy: {}'.format(pornography_likelihood.name))
